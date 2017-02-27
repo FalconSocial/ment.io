@@ -204,41 +204,42 @@ angular.module('mentio', [])
                     }
                 );
 
-                $document.on(
-                    'keydown keypress paste', function (event) {
+                $document.on('keydown', function (event) {
                         var activeMenuScope = $scope.getActiveMenuScope();
-                        if (activeMenuScope) {
-                            if (event.which === 9 || event.which === 13) {
+                        if (!activeMenuScope) return;
+                        switch (event.which) {
+                            case 9: case 13:
                                 event.preventDefault();
                                 activeMenuScope.selectActive();
-                            }
+                                break;
 
-                            if (event.which === 27) {
+
+                            case 27:
                                 event.preventDefault();
                                 activeMenuScope.$apply(function () {
                                     activeMenuScope.hideMenu();
                                 });
-                            }
+                                break;
 
-                            if (event.which === 40) {
+                            case 40:
                                 event.preventDefault();
                                 activeMenuScope.$apply(function () {
                                     activeMenuScope.activateNextItem();
                                 });
                                 activeMenuScope.adjustScroll(1);
-                            }
+                                break;
 
-                            if (event.which === 38) {
+                            case 38:
                                 event.preventDefault();
                                 activeMenuScope.$apply(function () {
                                     activeMenuScope.activatePreviousItem();
                                 });
                                 activeMenuScope.adjustScroll(-1);
-                            }
+                                break;
 
-                            if (event.which === 37 || event.which === 39) {
+                            case 37: case 39:
                                 event.preventDefault();
-                             }
+                                break;
                         }
                     }
                 );
@@ -477,7 +478,7 @@ angular.module('mentio', [])
                 triggerChar: '=mentioTriggerChar',
                 forElem: '=mentioFor',
                 parentScope: '=mentioParentScope',
-                visible: '=mentioIsVisible'
+                visible: '=?mentioIsVisible'
             },
             templateUrl: function(tElement, tAttrs) {
                 return tAttrs.mentioTemplateUrl !== undefined ? tAttrs.mentioTemplateUrl : 'mentio-menu.tpl.html';
