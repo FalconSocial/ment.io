@@ -7,7 +7,6 @@ bower_components
 *.sublime-workspace
 
 *.sublime-project
-
+.vscode
 src/templates.js
-
 ment.io/tinymce.js
