@@ -173,7 +173,7 @@ angular.module('mentio', [])
                     menuScope.setParent($scope);
                 };
 
-                $scope.$on(
+                var menuCreatedEventClenaup = $scope.$on(
                     'menuCreated', function (event, data) {
                         if (
                             $attrs.id !== undefined ||
@@ -194,55 +194,61 @@ angular.module('mentio', [])
                     }
                 );
 
-                $document.on(
-                    'click', function () {
-                        if ($scope.isActive()) {
-                            $scope.$apply(function () {
-                                $scope.hideAll();
+                function clickHandler () {
+                    if ($scope.isActive()) {
+                        $scope.$apply(function () {
+                            $scope.hideAll();
+                        });
+                    }
+                }
+                $document.on('click', clickHandler);
+
+                function keydownHandler (event) {
+                    var activeMenuScope = $scope.getActiveMenuScope();
+                    if (!activeMenuScope) return;
+                    switch (event.which) {
+                        case 9: case 13:
+                            event.preventDefault();
+                            activeMenuScope.selectActive();
+                            break;
+
+
+                        case 27:
+                            event.preventDefault();
+                            activeMenuScope.$apply(function () {
+                                activeMenuScope.hideMenu();
                             });
-                        }
+                            break;
+
+                        case 40:
+                            event.preventDefault();
+                            activeMenuScope.$apply(function () {
+                                activeMenuScope.activateNextItem();
+                            });
+                            activeMenuScope.adjustScroll(1);
+                            break;
+
+                        case 38:
+                            event.preventDefault();
+                            activeMenuScope.$apply(function () {
+                                activeMenuScope.activatePreviousItem();
+                            });
+                            activeMenuScope.adjustScroll(-1);
+                            break;
+
+                        case 37: case 39:
+                            event.preventDefault();
+                            break;
                     }
-                );
+                }
 
-                $document.on('keydown', function (event) {
-                        var activeMenuScope = $scope.getActiveMenuScope();
-                        if (!activeMenuScope) return;
-                        switch (event.which) {
-                            case 9: case 13:
-                                event.preventDefault();
-                                activeMenuScope.selectActive();
-                                break;
+                $document.on('keydown', keydownHandler);
 
-
-                            case 27:
-                                event.preventDefault();
-                                activeMenuScope.$apply(function () {
-                                    activeMenuScope.hideMenu();
-                                });
-                                break;
-
-                            case 40:
-                                event.preventDefault();
-                                activeMenuScope.$apply(function () {
-                                    activeMenuScope.activateNextItem();
-                                });
-                                activeMenuScope.adjustScroll(1);
-                                break;
-
-                            case 38:
-                                event.preventDefault();
-                                activeMenuScope.$apply(function () {
-                                    activeMenuScope.activatePreviousItem();
-                                });
-                                activeMenuScope.adjustScroll(-1);
-                                break;
-
-                            case 37: case 39:
-                                event.preventDefault();
-                                break;
-                        }
-                    }
-                );
+                $scope.$on('$destroy', function () {
+                    $document.off('click', clickHandler);
+                    $document.off('keydown', keydownHandler)
+                    menuCreatedEventClenaup();
+                });
             }],
             link: function (scope, element, attrs) {
                 scope.triggerCharMap = {};
@@ -578,17 +584,19 @@ angular.module('mentio', [])
                             scope : scope
                         });
                 }
-
-                angular.element($window).bind(
-                    'resize', function () {
-                        if (scope.isVisible()) {
-                            var triggerCharSet = [];
-                            triggerCharSet.push(scope.triggerChar);
-                            mentioUtil.popUnderMention(scope.parentMentio.context(),
-                                triggerCharSet, element, scope.requireLeadingSpace);
-                        }
+                function resizeHandler () {
+                    if (scope.isVisible()) {
+                        var triggerCharSet = [];
+                        triggerCharSet.push(scope.triggerChar);
+                        mentioUtil.popUnderMention(scope.parentMentio.context(),
+                            triggerCharSet, element, scope.requireLeadingSpace);
                     }
-                );
+                }
+                angular.element($window).bind('resize', resizeHandler);
+
+                scope.$on('$destroy', function () {
+                    angular.element($window).unbind('resize', resizeHandler);
+                });
 
                 scope.$watch('items', function (items) {
                     if (items && items.length > 0) {
