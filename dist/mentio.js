@@ -1247,7 +1247,7 @@ angular.module('mentio')
          */
         function haveSameMentions(mentionChars, str1, str2) {
             if (mentionChars && str1 && str2) {
-                var mentionRegex = new RegExp('\\' + mentionChars[0] + '\\w+', 'g');
+                var mentionRegex = new RegExp('\\' + mentionChars[0] + '\(\w|\.)+', 'g');
                 var mentions1 = unescapeSceString(str1).match(mentionRegex);
                 var mentions2 = unescapeSceString(str2).match(mentionRegex);
 
